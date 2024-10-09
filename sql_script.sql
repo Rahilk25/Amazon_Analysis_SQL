@@ -157,6 +157,49 @@ Select
 From cte
 
 
+-- 11 Total sales, orders and Profit each year
+
+Select 
+  extract(year from order_date) as Year,
+  count(id) as tot_orders, 
+  sum(profit) as tot_profit
+From sales
+Group by Year
+Order by Year
+
+
+12. YOY profit growth
+with cte as(
+        Select 
+          extract(year from order_date) as Year , 
+          sum(profit) as tot_profit
+          lag(sum(profit)) over (order by extract(year from order_date)) as prev_profit
+        From sales 
+        Group by Year)
+
+Select 
+  Year, 
+  tot_profit,
+  Round((tot_profit - prev_profit) / prev_profit * 100,2) || '%' as growth
+From cte
+
+
+name
+occupation
+from occupations
+
+
+Select concat(name, '(', left(occupation,1),')' as name
+From occupations
+union 
+
+
+
+
+
+
+
+
 
 
 
