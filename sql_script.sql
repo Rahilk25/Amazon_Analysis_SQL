@@ -20,8 +20,14 @@ Where
   quantity is null or
   profit is null 
 
--- Calculate the profit margin percentage for each sale (Profit divided by Sales).
+-- Adding column profit_margin_per by calculating the profit margin percentage for each sale (Profit divided by Sales).
+Alter table sales
+  Add column profit_margin_perc numeric;
 
+Update sales 
+  Set profit_margin_perc =
+                Select Round(profit/sales,2) || '%'
+                From sales
 
   
   
