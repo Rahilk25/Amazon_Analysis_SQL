@@ -21,13 +21,14 @@ Where
   profit is null 
 
 -- Adding column profit_margin_per by calculating the profit margin percentage for each sale (Profit divided by Sales).
-Alter table sales
+
+  
+  Alter table sales
   Add column profit_margin_perc numeric;
 
 Update sales 
   Set profit_margin_perc =
-                Select Round(profit/sales,2) || '%'
-                From sales
+                Round((profit::numeric/sales:: numeric)*100,2)
 
   
   
@@ -35,13 +36,7 @@ Update sales
   
   
   
-  
-  
-
-
-
-
--- Business Problems
+  -- Business Problems
   
 -- Q.1 Find total sales for each category ?
 
@@ -51,7 +46,7 @@ Group by category;
 
 -- Q.2 Find out top 5 customers who made the highest profits?
 
-Select customer_name, sum(profits) as tot_profits
+Select customer_name, sum(profit) as tot_profits
 From sales
 Group by customer_name
 order by tot_profits desc
@@ -61,8 +56,8 @@ Limit 5;
 
 Select customer_name, tot_profit
 From(
-    Select customer_name, sum(profits) as tot_profit 
-        row_number() over( order by sum(profits) desc) as rnk
+    Select customer_name, sum(profit) as tot_profit,
+        row_number() over( order by sum(profit) desc) as rnk
     From sales
     Group by customer_name) a
 Where rnk < 6
@@ -109,7 +104,7 @@ Join revenue22 r2
 
 -- Q.6 Highest profitable sub category ?
 
-Select sub_category, sum(profits) as tot_profit
+Select sub_category, sum(profit) as tot_profit
 From sales
 Group by sub_category
 Order by tot_profit desc
@@ -149,13 +144,14 @@ With cte as (
             sum(sales) as sub_cat_revenue
           From sales
           WHere extract(Year from order_date) = 2023
+		  Group by 	sub_category	
 )
 
 Select
   sub_category, 
-  Round(sub_cat_revenue / (Select sum(sales) From sales where extract(Year from order_date = 2023)) * 100,2) || '%' as contr_perc
+  Round(sub_cat_revenue:: numeric / (Select sum(sales) From sales where extract(Year from order_date) = 2023):: numeric * 100,2) || '%'  as contr_perc
 From cte
-
+Order by Round(sub_cat_revenue:: numeric / (Select sum(sales) From sales where extract(Year from order_date) = 2023):: numeric * 100,2)  desc
 
 -- 11 Total sales, orders and Profit each year
 
@@ -168,11 +164,11 @@ Group by Year
 Order by Year
 
 
-12. YOY profit growth
+--12. YOY profit growth
 with cte as(
         Select 
           extract(year from order_date) as Year , 
-          sum(profit) as tot_profit
+          sum(profit) as tot_profit,
           lag(sum(profit)) over (order by extract(year from order_date)) as prev_profit
         From sales 
         Group by Year)
@@ -180,18 +176,11 @@ with cte as(
 Select 
   Year, 
   tot_profit,
-  Round((tot_profit - prev_profit) / prev_profit * 100,2) || '%' as growth
+  Round((tot_profit:: numeric - prev_profit:: numeric) / prev_profit:: numeric * 100,2) || '%' as growth
 From cte
 
 
-name
-occupation
-from occupations
 
-
-Select concat(name, '(', left(occupation,1),')' as name
-From occupations
-union 
 
 
 
